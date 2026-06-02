@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#185FA5">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="FlottaApp">
+<title>FlottaApp</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;background:#f0ede8;min-height:100vh;display:flex;justify-content:center}
+.app{width:100%;max-width:420px;background:#f0ede8;min-height:100vh;display:flex;flex-direction:column}
+.topbar{background:#fff;border-bottom:0.5px solid rgba(0,0,0,.1);padding:10px 14px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
+.topbar-title{font-size:15px;font-weight:500}
+.topbar-sub{font-size:11px;color:#888;margin-top:1px}
+.crown{font-size:11px;background:#FAEEDA;color:#633806;padding:2px 7px;border-radius:20px;font-weight:500}
+.nav{display:flex;background:#fff;border-bottom:0.5px solid rgba(0,0,0,.1);position:sticky;top:53px;z-index:10}
+.nav-btn{flex:1;padding:8px 2px;font-size:10px;color:#888;background:none;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;line-height:1.2}
+.nav-btn.active{color:#185FA5}
+.nav-emoji{font-size:18px}
+.notif-badge{position:relative;display:inline-block}
+.notif-count{position:absolute;top:-4px;right:-4px;background:#E24B4A;color:#fff;border-radius:20px;font-size:9px;font-weight:700;padding:1px 4px;min-width:14px;text-align:center;display:none}
+.notif-count.show{display:block}
+.section{display:none;padding:10px 12px;flex:1}
+.section.active{display:block}
+.slabel{font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.05em;margin:10px 0 5px}
+.card{background:#fff;border-radius:12px;border:0.5px solid rgba(0,0,0,.1);padding:11px 13px;margin-bottom:8px}
+.card.locked{background:#f7f6f2;opacity:.82}
+.row{display:flex;align-items:center;gap:9px}
+.av{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:500;flex-shrink:0}
+.av-amber{background:#FAEEDA;color:#633806}.av-teal{background:#E1F5EE;color:#085041}.av-blue{background:#E6F1FB;color:#0C447C}.av-green{background:#EAF3DE;color:#27500A}.av-purple{background:#EEEDFE;color:#3C3489}.av-coral{background:#FAECE7;color:#712B13}.av-gray{background:#F1EFE8;color:#5F5E5A}
+.dname{font-size:13px;font-weight:500;color:#111}
+.dsub{font-size:11px;color:#888;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.badge{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:500;padding:2px 7px;border-radius:20px;white-space:nowrap}
+.b-munka{background:#E1F5EE;color:#0F6E56}.b-hiba{background:#FCEBEB;color:#A32D2D}.b-bekotes{background:#FAEEDA;color:#854F0B}.b-uton{background:#E6F1FB;color:#185FA5}.b-iroda{background:#EEEDFE;color:#3C3489}.b-eszik{background:#EAF3DE;color:#3B6D11}.b-tankol{background:#FCEBEB;color:#A32D2D}.b-szabad{background:#F1EFE8;color:#5F5E5A}
+.fuel-row{margin-top:6px;display:flex;align-items:center;gap:7px}
+.fuel-bar-bg{flex:1;height:5px;background:#eee;border-radius:3px;overflow:hidden}
+.fuel-bar-fill{height:5px;border-radius:3px;transition:width .3s}
+.fuel-lbl{font-size:11px;min-width:38px;text-align:right;font-weight:500}
+.divider{height:0.5px;background:rgba(0,0,0,.08);margin:8px 0}
+.opts-label{font-size:11px;color:#888;margin-bottom:5px;font-weight:500}
+.opts-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+.opt-btn{padding:7px 4px;font-size:12px;border-radius:8px;border:0.5px solid rgba(0,0,0,.12);background:#f5f4f0;color:#555;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px}
+.opt-btn.active{border-width:1.5px;font-weight:500}
+.opt-btn:disabled,.serv-btn:disabled,.fuel-opt:disabled{opacity:.35;cursor:not-allowed}
+.ob-munka.active{background:#E1F5EE;border-color:#5DCAA5;color:#0F6E56}
+.ob-hiba.active{background:#FCEBEB;border-color:#F09595;color:#A32D2D}
+.ob-bekotes.active{background:#FAEEDA;border-color:#FAC775;color:#854F0B}
+.ob-uton.active{background:#E6F1FB;border-color:#85B7EB;color:#185FA5}
+.ob-iroda.active{background:#EEEDFE;border-color:#AFA9EC;color:#3C3489}
+.ob-eszik.active{background:#EAF3DE;border-color:#C0DD97;color:#3B6D11}
+.ob-tankol.active{background:#FCEBEB;border-color:#F09595;color:#A32D2D}
+.ob-szabad.active{background:#F1EFE8;border-color:#B4B2A9;color:#5F5E5A}
+.serv-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-top:4px}
+.serv-btn{padding:6px 3px;font-size:10px;border-radius:8px;border:0.5px solid rgba(0,0,0,.12);background:#f5f4f0;color:#666;cursor:pointer;text-align:center;display:flex;flex-direction:column;align-items:center;gap:2px}
+.serv-btn i{font-size:13px}
+.serv-btn.active{border-width:1.5px;font-weight:500}
+.sb-wait.active{background:#FAEEDA;border-color:#FAC775;color:#854F0B}
+.sb-in.active{background:#E6F1FB;border-color:#85B7EB;color:#185FA5}
+.sb-done.active{background:#EAF3DE;border-color:#C0DD97;color:#3B6D11}
+.serv-bar{display:none;margin-top:5px;padding:5px 9px;border-radius:8px;font-size:12px;font-weight:500;align-items:center;gap:6px}
+.serv-bar.show{display:flex}
+.sb-bar-wait{background:#FAEEDA;color:#854F0B}.sb-bar-in{background:#E6F1FB;color:#185FA5}.sb-bar-done{background:#EAF3DE;color:#3B6D11}
+.toast{display:none;position:fixed;top:70px;left:50%;transform:translateX(-50%);background:#111;color:#fff;padding:10px 18px;border-radius:20px;font-size:13px;z-index:100;white-space:nowrap;max-width:90%}
+.toast.show{display:block}
+.notif-toast{display:none;margin-bottom:8px;padding:8px 11px;border-radius:8px;font-size:12px;background:#EAF3DE;color:#3B6D11;border:0.5px solid #C0DD97;align-items:center;gap:6px}
+.notif-toast.show{display:flex}
+.fuel-opts{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-top:5px}
+.fuel-opt{padding:5px 3px;font-size:11px;border-radius:8px;border:0.5px solid rgba(0,0,0,.12);background:#f5f4f0;color:#666;cursor:pointer;text-align:center;font-weight:500}
+.fuel-opt.active{border-width:1.5px}
+.fo-tele.active,.fo-3n4.active{background:#EAF3DE;border-color:#97C459;color:#27500A}
+.fo-fele.active{background:#FAEEDA;border-color:#EF9F27;color:#633806}
+.fo-negyed.active{background:#FCEBEB;border-color:#F09595;color:#A32D2D}
+.make-tag{display:inline-flex;align-items:center;gap:3px;font-size:10px;padding:2px 6px;border-radius:20px;font-weight:500;margin-top:3px}
+.mt-toyota{background:#EAF3DE;color:#27500A}.mt-ford{background:#E6F1FB;color:#0C447C}.mt-peugeot{background:#EEEDFE;color:#26215C}
+.car-icon{width:38px;height:38px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0}
+.ci-toyota{background:#EAF3DE;color:#3B6D11}.ci-ford{background:#E6F1FB;color:#185FA5}.ci-peugeot{background:#EEEDFE;color:#3C3489}.ci-serv{background:#FAEEDA;color:#854F0B}
+.crew-label{font-size:11px;color:#888;margin-bottom:5px;font-weight:500}
+.crew-slots{display:flex;flex-direction:column;gap:4px}
+.crew-slot{display:flex;align-items:center;gap:7px;padding:5px 8px;border-radius:8px;border:0.5px solid rgba(0,0,0,.1);background:#f5f4f0}
+.crew-slot select{flex:1;padding:3px 6px;font-size:12px;border-radius:6px;border:0.5px solid rgba(0,0,0,.15);background:#fff;color:#111}
+.crew-slot select:disabled{opacity:.5;background:#eee}
+.slot-num{font-size:11px;color:#888;min-width:14px}
+.add-person-btn{margin-top:4px;width:100%;padding:5px;font-size:11px;border-radius:8px;border:0.5px dashed rgba(0,0,0,.2);background:none;color:#888;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px}
+.remove-btn{padding:2px 5px;font-size:12px;border:none;background:none;color:#aaa;cursor:pointer}
+.lock-notice{display:flex;align-items:center;gap:5px;font-size:11px;color:#aaa;margin-top:6px;padding:5px 8px;border-radius:8px;background:#f0ede8;border:0.5px solid rgba(0,0,0,.08)}
+.save-btn{width:100%;padding:10px;background:#185FA5;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;margin-top:4px}
+.warn-box{background:#FCEBEB;border-radius:8px;padding:9px 11px;margin-bottom:8px;border:0.5px solid #F7C1C1;font-size:12px;color:#A32D2D;display:flex;gap:7px;align-items:center}
+.notif-dot{width:7px;height:7px;border-radius:50%;background:#185FA5;margin-top:4px;flex-shrink:0}
+.notif-dot.new{background:#E24B4A}
+.notif-dot.old{background:#ccc}
+.notif-dot.boke{background:#854F0B}
+.notif-row{display:flex;gap:9px;align-items:flex-start}
+.ntxt{font-size:12px;color:#111;line-height:1.4}
+.ntime{font-size:11px;color:#888;margin-top:2px}
+.role-badge{font-size:10px;padding:2px 6px;border-radius:20px;font-weight:500}
+.r-admin{background:#FAEEDA;color:#633806}.r-terul{background:#E6F1FB;color:#185FA5}.r-szer{background:#EAF3DE;color:#3B6D11}.r-iroda{background:#EEEDFE;color:#3C3489}.r-irod2{background:#FAECE7;color:#712B13}
+.std{width:100%;padding:7px 9px;font-size:13px;border-radius:8px;border:0.5px solid rgba(0,0,0,.15);background:#fff;color:#111;margin-bottom:8px}
+.modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.55);z-index:200;align-items:center;justify-content:center}
+.modal-overlay.show{display:flex}
+.modal-card{background:#fff;border-radius:16px;padding:22px 20px;width:92%;max-width:360px;max-height:85vh;overflow-y:auto}
+.modal-title{font-size:17px;font-weight:600;margin-bottom:5px}
+.modal-sub{font-size:13px;color:#888;margin-bottom:14px}
+.modal-btn{width:100%;padding:11px;background:#185FA5;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;margin-top:8px}
+.modal-btn.red{background:#E24B4A}
+.modal-btn.gray{background:none;border:0.5px solid rgba(0,0,0,.2);color:#666}
+.boke-btn{width:100%;padding:7px;margin-top:6px;font-size:12px;border-radius:8px;border:0.5px solid #FAC775;background:#FAEEDA;color:#854F0B;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px}
+.pin-display{font-size:18px;letter-spacing:6px;font-weight:600;color:#185FA5;text-align:center;padding:8px;background:#E6F1FB;border-radius:8px;margin:6px 0}
+.sync-dot{width:8px;height:8px;border-radius:50%;background:#3B6D11;display:inline-block;margin-left:6px;vertical-align:middle}
+.sync-dot.off{background:#ccc}
+.iroda-dispatch{background:#EEEDFE;border-radius:12px;border:0.5px solid #AFA9EC;padding:12px;margin-bottom:8px}
+.iroda-dispatch-title{font-size:13px;font-weight:600;color:#3C3489;margin-bottom:10px}
+</style>
+<script>
+// Auto-logout after 4 hours of inactivity
+let logoutTimer = null;
+const LOGOUT_MS = 4 * 60 * 60 * 1000; // 4 hours
+
+function resetLogoutTimer() {
+  if(logoutTimer) clearTimeout(logoutTimer);
+  const saved = localStorage.getItem('flotta_login');
+  if(saved) {
+    localStorage.setItem('flotta_login_time', Date.now().toString());
+    logoutTimer = setTimeout(() => {
+      if(typeof doLogout === 'function') doLogout();
+      localStorage.removeItem('flotta_login');
+      localStorage.removeItem('flotta_login_time');
+    }, LOGOUT_MS);
+  }
+}
+
+// Reset timer on any user interaction
+['touchstart','click','keydown'].forEach(e => {
+  document.addEventListener(e, resetLogoutTimer, { passive: true });
+});
+
+// Check on page load if session is still valid
+window.addEventListener('load', () => {
+  const saved = localStorage.getItem('flotta_login');
+  const savedTime = parseInt(localStorage.getItem('flotta_login_time') || '0');
+  if(saved && Date.now() - savedTime < LOGOUT_MS) {
+    // Session still valid, auto-login
+    const data = JSON.parse(saved);
+    setTimeout(() => autoLogin(data.name, data.pin), 500);
+  }
+});
+
+// Register service worker for push notifications
+if('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js').catch(() => {});
+}
+</script>
+</head>
+<body>
+<div id="loginScreen" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:24px;background:#f0ede8">
+  <div style="background:#fff;border-radius:16px;padding:28px 24px;width:100%;max-width:360px;border:0.5px solid rgba(0,0,0,.1)">
+    <div style="font-size:48px;text-align:center;margin-bottom:8px">🚐</div>
+    <div style="font-size:20px;font-weight:600;text-align:center;margin-bottom:4px">FlottaApp</div>
+    <div style="font-size:13px;color:#888;text-align:center;margin-bottom:24px">Jelentkezz be a folytatáshoz</div>
+    <select class="std" id="loginName" style="margin-bottom:10px">
+      <option value="">Válassz nevet...</option>
+      <option value="Urban David">Urbán Dávid</option>
+      <option value="Nagy Richard">Nagy Richárd</option>
+      <option value="Molnar David">Molnár Dávid</option>
+      <option value="Timari Kevin">Timári Kevin</option>
+      <option value="Szabo Tiria">Szabó Tíria</option>
+      <option value="Gulyas Ibolya">Gulyásné Gyöngyösi Ibolya</option>
+    </select>
+    <input type="password" class="std" id="loginPin" placeholder="PIN kód (4 szám)" maxlength="4" inputmode="numeric" style="margin-bottom:10px">
+    <button class="save-btn" onclick="doLogin()">🔑 Belépés</button>
+    <div id="loginError" style="font-size:12px;color:#A32D2D;text-align:center;margin-top:8px;display:none">Hibás PIN kód!</div>
+    <div style="font-size:11px;color:#bbb;text-align:center;margin-top:12px">Demo PIN: 1234</div>
+  </div>
+</div>
+
+<div id="mainApp" style="display:none;width:100%">
+<div class="app">
+  <div class="topbar">
+    <div>
+      <div class="topbar-title">🚐 FlottaApp <span class="sync-dot off" id="syncDot"></span></div>
+      <div class="topbar-sub" id="topbarSub">–</div>
+    </div>
+    <div id="myAvatar" style="width:30px;height:30px;border-radius:50%;background:#FAEEDA;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;color:#633806;cursor:pointer" onclick="doLogout()">–</div>
+  </div>
+  <div class="nav">
+    <button class="nav-btn active" onclick="showTab('csapat',this)"><span class="nav-emoji">👥</span>Csapat</button>
+    <button class="nav-btn" onclick="showTab('autok',this)"><span class="nav-emoji">🚗</span>Autók</button>
+    <button class="nav-btn" onclick="showTab('status',this)"><span class="nav-emoji">📍</span>Státuszom</button>
+    <button class="nav-btn" onclick="showTab('ertesit',this)"><span class="notif-badge"><span class="nav-emoji">🔔</span><span class="notif-count" id="notifCount"></span></span>Értesítés</button>
+    <button class="nav-btn" onclick="showTab('admin',this)" id="adminTabBtn" style="display:none"><span class="nav-emoji">⚙️</span>Admin</button>
+  </div>
+
+  <div id="csapat" class="section active"><div id="csapatLista"></div></div>
+  <div id="autok" class="section"><div id="cardsRoot"></div></div>
+
+  <div id="status" class="section">
+    <div class="card" style="background:#E6F1FB;border-color:#B5D4F4;margin-bottom:10px">
+      <div style="font-size:11px;color:#185FA5;margin-bottom:5px">📍 Jelenlegi státuszod</div>
+      <div style="font-size:14px;font-weight:500;color:#0C447C" id="myStatusDisplay">–</div>
+    </div>
+    <!-- Iroda dispatch panel -->
+    <div id="irodaDispatchPanel" style="display:none">
+      <div class="iroda-dispatch">
+        <div class="iroda-dispatch-title">📋 Diszpécser – Feladat küldése</div>
+        <div class="opts-label">Feladat típusa</div>
+        <div class="opts-grid" style="margin-bottom:8px">
+          <button class="opt-btn ob-hiba" onclick="selDispatch(this,'hiba')">🔧 Hiba</button>
+          <button class="opt-btn ob-bekotes" onclick="selDispatch(this,'bekotes')">🔌 Bekötés</button>
+          <button class="opt-btn ob-uton" onclick="selDispatch(this,'uton')">🚗 Kiszállás</button>
+          <button class="opt-btn ob-munka" onclick="selDispatch(this,'munka')">💼 Egyéb munka</button>
+        </div>
+        <div class="opts-label">Helyszín</div>
+        <select class="std" id="dispatchLoc">
+          <option>Hegyeshalom</option><option>Levél</option><option>Bezenye</option><option>Rajka</option><option>Bezenye-Paprét</option><option>Jánossomorja</option><option>Újrónafő</option>
+        </select>
+        <div class="opts-label">Kiküldött autó</div>
+        <select class="std" id="dispatchCar"><option value="">– Válassz autót –</option></select>
+        <div class="opts-label">Megjegyzés (opcionális)</div>
+        <input type="text" id="dispatchNote" placeholder="pl. ügyfél neve, cím..." style="width:100%;padding:7px 9px;font-size:13px;border-radius:8px;border:0.5px solid rgba(0,0,0,.15);background:#fff;color:#111;margin-bottom:8px">
+        <button class="save-btn" style="background:#3C3489" onclick="sendDispatch()">📋 Feladat elküldése</button>
+      </div>
+    </div>
+    <div class="slabel">Feladat típusa</div>
+    <div class="opts-grid" id="myStatusGrid" style="margin-bottom:10px">
+      <button class="opt-btn ob-munka active" onclick="selMyOpt(this,'munka')">💼 Munka</button>
+      <button class="opt-btn ob-hiba" onclick="selMyOpt(this,'hiba')">🔧 Hibára megy</button>
+      <button class="opt-btn ob-bekotes" onclick="selMyOpt(this,'bekotes')">🔌 Bekötés</button>
+      <button class="opt-btn ob-uton" onclick="selMyOpt(this,'uton')">🚗 Úton</button>
+      <button class="opt-btn ob-iroda" onclick="selMyOpt(this,'iroda')">🏢 Irodában</button>
+      <button class="opt-btn ob-eszik" onclick="selMyOpt(this,'eszik')">🍽️ Eszünk</button>
+      <button class="opt-btn ob-tankol" onclick="selMyOpt(this,'tankol')">⛽ Tankolunk</button>
+      <button class="opt-btn ob-szabad" onclick="selMyOpt(this,'szabad')">🏠 Szabad</button>
+    </div>
+    <div class="slabel">📍 Helyszín</div>
+    <select class="std" id="myLocSel">
+      <option>Hegyeshalom</option><option>Levél</option><option>Bezenye</option><option>Rajka</option><option>Bezenye-Paprét</option><option>Jánossomorja</option><option>Újrónafő</option>
+    </select>
+    <div class="slabel">🚗 Autó</div>
+    <div class="card" style="margin-bottom:8px">
+      <div class="row">
+        <div style="font-size:22px">🚐</div>
+        <div style="flex:1;min-width:0">
+          <div class="dname" id="myCarDisplay">–</div>
+          <div class="dsub" id="myCarType">–</div>
+        </div>
+        <button style="padding:5px 10px;font-size:12px;border-radius:8px;border:0.5px dashed #85B7EB;background:#E6F1FB;color:#185FA5;cursor:pointer" onclick="toggleCarSwitch()">🔄 Váltás</button>
+      </div>
+      <div id="carSwitchPanel" style="display:none;margin-top:8px">
+        <div class="opts-label">Válassz autót:</div>
+        <div id="carSwitchList"></div>
+      </div>
+    </div>
+    <div class="slabel">⛽ Nap végi üzemanyag</div>
+    <div class="fuel-opts" style="margin-bottom:10px">
+      <button class="fuel-opt fo-tele" onclick="selMyFuel(this,'tele')">Tele</button>
+      <button class="fuel-opt fo-3n4 active" onclick="selMyFuel(this,'3n4')">¾</button>
+      <button class="fuel-opt fo-fele" onclick="selMyFuel(this,'fele')">Fele</button>
+      <button class="fuel-opt fo-negyed" onclick="selMyFuel(this,'negyed')">Negyed</button>
+    </div>
+    <div class="notif-toast" id="myStatusToast">🔔 <span>Értesítés elküldve mindenkinek!</span></div>
+    <button class="save-btn" id="myStatusBtn" onclick="saveMyStatus()">✅ Státusz frissítése</button>
+  </div>
+
+  <div id="ertesit" class="section">
+    <div id="newNotifArea"></div>
+    <div id="fuelWarnArea"></div>
+    <div class="slabel">Korábbi</div>
+    <div class="card"><div class="notif-row"><div class="notif-dot old"></div><div><div class="ntxt">Az app elindult – üdv a FlottaAppban! 🚐</div><div class="ntime">Ma</div></div></div></div>
+  </div>
+
+  <div id="admin" class="section">
+    <div class="slabel">🚗 Autók kezelése</div>
+    <div class="card" id="adminCarList"></div>
+    <div class="slabel">➕ Új autó</div>
+    <div class="card">
+      <input type="text" id="newPlate" placeholder="Rendszám pl. ABC-123" style="width:100%;padding:7px 9px;font-size:13px;border-radius:8px;border:0.5px solid rgba(0,0,0,.15);background:#fff;color:#111;margin-bottom:7px;text-transform:uppercase">
+      <select class="std" id="newBrand"><option>Toyota</option><option>Ford</option><option>Peugeot</option><option>Egyéb</option></select>
+      <input type="text" id="newType" placeholder="Típus pl. Transit Connect" style="width:100%;padding:7px 9px;font-size:13px;border-radius:8px;border:0.5px solid rgba(0,0,0,.15);background:#fff;color:#111;margin-bottom:7px">
+      <button class="save-btn" onclick="addCar()">➕ Autó hozzáadása</button>
+    </div>
+    <div class="slabel">👥 Csapattagok & PIN-ek</div>
+    <div class="card" id="adminMemberList"></div>
+  </div>
+</div>
+</div>
+
+<!-- Bökés modal -->
+<div class="modal-overlay" id="bokeModal">
+  <div class="modal-card">
+    <div class="modal-title">👋 Megbökning</div>
+    <div class="modal-sub" id="bokeModalSub">–</div>
+    <textarea id="bokeMsg" placeholder="Írd be az üzeneted... (pl. merre vagy? mi van?)" style="width:100%;padding:9px;font-size:13px;border-radius:8px;border:0.5px solid rgba(0,0,0,.2);background:#fff;color:#111;height:80px;resize:none;margin-bottom:4px"></textarea>
+    <button class="modal-btn" onclick="sendBoke()">👋 Bökés küldése</button>
+    <button class="modal-btn gray" onclick="closeModal('bokeModal')" style="margin-top:6px">Mégse</button>
+  </div>
+</div>
+
+<!-- Admin PIN modal -->
+<div class="modal-overlay" id="adminPinModal">
+  <div class="modal-card">
+    <div class="modal-title">🔑 PIN kezelés</div>
+    <div class="modal-sub" id="adminPinName">–</div>
+    <input type="hidden" id="adminPinUid">
+    <div class="pin-display" id="adminPinDisplay">••••</div>
+    <div style="display:flex;gap:8px;margin-top:8px">
+      <button onclick="toggleShowPin()" style="flex:1;padding:8px;font-size:12px;border-radius:8px;border:0.5px solid rgba(0,0,0,.2);background:#f5f4f0;color:#333;cursor:pointer" id="showPinBtn">👁️ Mutat</button>
+      <button onclick="editPin()" style="flex:1;padding:8px;font-size:12px;border-radius:8px;border:0.5px solid #85B7EB;background:#E6F1FB;color:#185FA5;cursor:pointer">✏️ Módosít</button>
+    </div>
+    <div id="pinEditArea" style="display:none;margin-top:10px">
+      <input type="number" id="newPinVal" placeholder="Új PIN (4 szám)" maxlength="4" inputmode="numeric" style="width:100%;padding:9px;font-size:18px;letter-spacing:6px;border-radius:8px;border:0.5px solid rgba(0,0,0,.2);background:#fff;color:#111;text-align:center;margin-bottom:6px">
+      <button class="modal-btn" onclick="saveAdminPin()">✅ PIN mentése</button>
+    </div>
+    <button class="modal-btn gray" onclick="closeModal('adminPinModal')" style="margin-top:8px">Bezár</button>
+  </div>
+</div>
+
+<div class="toast" id="globalToast"></div>
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getFirestore, initializeFirestore, doc, setDoc, getDoc, onSnapshot, collection, addDoc, serverTimestamp, query, orderBy, limit, deleteDoc } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCmb55Vs9DYlQMRU7W5w6IxwXMLhmLk6ho",
+  authDomain: "flottaapp.firebaseapp.com",
+  projectId: "flottaapp",
+  storageBucket: "flottaapp.firebasestorage.app",
+  messagingSenderId: "207692481935",
+  appId: "1:207692481935:web:c0e51f78ed1891ddb177fa"
+};
+
+const fbApp = initializeApp(firebaseConfig);
+const db = initializeFirestore(fbApp, { experimentalForceLongPolling: true });
+
+const PINS_DEFAULT = {'Urban David':'1234','Nagy Richard':'1234','Molnar David':'1234','Timari Kevin':'1234','Szabo Tiria':'1234','Gulyas Ibolya':'1234'};
+const ADMINS_DEFAULT = ['Urban David'];
+const DISPLAY_NAMES = {
+  'Urban David':'Urbán Dávid','Nagy Richard':'Nagy Richárd','Molnar David':'Molnár Dávid',
+  'Timari Kevin':'Timári Kevin','Szabo Tiria':'Szabó Tíria','Gulyas Ibolya':'Gulyásné Gyöngyösi Ibolya'
+};
+const INITIALS = {'Urban David':'UD','Nagy Richard':'NR','Molnar David':'MD','Timari Kevin':'TK','Szabo Tiria':'ST','Gulyas Ibolya':'GI'};
+const AV_COLORS = {'Urban David':'av-amber','Nagy Richard':'av-teal','Molnar David':'av-blue','Timari Kevin':'av-green','Szabo Tiria':'av-purple','Gulyas Ibolya':'av-coral'};
+const ROLES_DEFAULT = {'Urban David':'Admin','Nagy Richard':'Területgazda','Molnar David':'Szerelő','Timari Kevin':'Szerelő','Szabo Tiria':'Irodavezető','Gulyas Ibolya':'Irodista'};
+const IRODA_USERS = ['Szabo Tiria','Gulyas Ibolya'];
+
+const statusList = [
+  {key:'munka',emoji:'💼',label:'Munka',badgeCls:'b-munka'},
+  {key:'hiba',emoji:'🔧',label:'Hibára megy',badgeCls:'b-hiba'},
+  {key:'bekotes',emoji:'🔌',label:'Bekötés',badgeCls:'b-bekotes'},
+  {key:'uton',emoji:'🚗',label:'Úton',badgeCls:'b-uton'},
+  {key:'iroda',emoji:'🏢',label:'Irodában',badgeCls:'b-iroda'},
+  {key:'eszik',emoji:'🍽️',label:'Eszünk',badgeCls:'b-eszik'},
+  {key:'tankol',emoji:'⛽',label:'Tankolunk',badgeCls:'b-tankol'},
+  {key:'szabad',emoji:'🏠',label:'Szabad',badgeCls:'b-szabad'},
+];
+const fuelData = {tele:{w:100,color:'#3B6D11',label:'Tele'},'3n4':{w:75,color:'#3B6D11',label:'¾'},fele:{w:50,color:'#BA7517',label:'Fele'},negyed:{w:20,color:'#E24B4A',label:'Negyed'}};
+const servData = {wait:{cls:'sb-bar-wait',txt:'⏳ Szervizre vár'},in:{cls:'sb-bar-in',txt:'🔧 Szervizben van'},done:{cls:'sb-bar-done',txt:'✅ Kész, elvihető'}};
+const locations = ['Hegyeshalom','Levél','Bezenye','Rajka','Bezenye-Paprét','Jánossomorja','Újrónafő'];
+const defaultCars = [
+  {id:'src',plate:'SRC-308',type:'Toyota Proace Van',brand:'Toyota',iconCls:'ci-toyota',tagCls:'mt-toyota',fuel:'3n4',crew:[],status:'szabad',loc:'Hegyeshalom',serv:null},
+  {id:'mhs',plate:'MHS-023',type:'Peugeot Boxer',brand:'Peugeot',iconCls:'ci-peugeot',tagCls:'mt-peugeot',fuel:'fele',crew:[],status:'szabad',loc:'Hegyeshalom',serv:null},
+  {id:'abs',plate:'ABS-091',type:'Ford Transit Connect',brand:'Ford',iconCls:'ci-ford',tagCls:'mt-ford',fuel:'tele',crew:[],status:'szabad',loc:'Hegyeshalom',serv:null},
+  {id:'njw',plate:'NJW-068',type:'Ford Transit Connect',brand:'Ford',iconCls:'ci-ford',tagCls:'mt-ford',fuel:'negyed',crew:[],status:'szabad',loc:'Hegyeshalom',serv:null},
+  {id:'pnh',plate:'PNH-594',type:'Ford Transit Connect',brand:'Ford',iconCls:'ci-ford',tagCls:'mt-ford',fuel:'3n4',crew:[],status:'szabad',loc:'Hegyeshalom',serv:null},
+];
+
+let currentUser = null;
+let cars = JSON.parse(JSON.stringify(defaultCars));
+let members = {};
+let myStatus = 'munka';
+let myFuel = '3n4';
+let myCar = null;
+let notifCount = 0;
+let adminList = [...ADMINS_DEFAULT];
+let bokeTarget = null;
+let dispatchType = null;
+let pinVisible = false;
+let currentPins = {...PINS_DEFAULT};
+
+function getStatusInfo(key){return statusList.find(s=>s.key===key)||statusList[7];}
+
+function showToast(msg,dur=2500){
+  const t=document.getElementById('globalToast');
+  t.innerHTML=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),dur);
+}
+
+function setSyncDot(on){
+  const d=document.getElementById('syncDot');
+  d.className='sync-dot'+(on?'':' off');
+}
+
+function timeAgo(ts){
+  if(!ts)return'Most';
+  const now=new Date();
+  const then=ts.toDate?ts.toDate():new Date(ts);
+  const diff=Math.floor((now-then)/1000);
+  if(diff<60)return'Most';
+  if(diff<3600)return Math.floor(diff/60)+' perce';
+  if(diff<86400)return Math.floor(diff/3600)+' órája';
+  return Math.floor(diff/86400)+' napja';
+}
+
+// PUSH NOTIFICATION
+async function requestNotifPermission(){
+  if(!('Notification' in window))return;
+  try{
+    const perm=await Notification.requestPermission();
+    if(perm==='granted'){
+      showToast('🔔 Értesítések engedélyezve!');
+    }
+  }catch(e){}
+}
+
+function sendPushNotif(title,body){
+  if(Notification.permission==='granted'){
+    try{
+      new Notification(title,{body,icon:'https://cdn.jsdelivr.net/npm/twemoji@14/2/svg/1f690.svg'});
+    }catch(e){}
+  }
+}
+
+window.doLogin = async function(){
+  const name=document.getElementById('loginName').value;
+  const pin=document.getElementById('loginPin').value;
+  if(!name){showToast('Válassz nevet!');return;}
+  let correctPin=PINS_DEFAULT[name]||'1234';
+  try{
+    const pinSnap=await getDoc(doc(db,'pins',name));
+    if(pinSnap.exists())correctPin=pinSnap.data().pin;
+    currentPins[name]=correctPin;
+  }catch(e){}
+  if(correctPin!==pin){document.getElementById('loginError').style.display='block';return;}
+  document.getElementById('loginError').style.display='none';
+  currentUser=name;
+  document.getElementById('loginScreen').style.display='none';
+  document.getElementById('mainApp').style.display='block';
+  document.getElementById('topbarSub').textContent=DISPLAY_NAMES[name]+(adminList.includes(name)?' · 👑 Admin':'');
+  document.getElementById('myAvatar').textContent=INITIALS[name];
+  if(adminList.includes(name))document.getElementById('adminTabBtn').style.display='flex';
+  if(IRODA_USERS.includes(name))document.getElementById('irodaDispatchPanel').style.display='block';
+  // Save session
+  localStorage.setItem('flotta_login', JSON.stringify({name, pin}));
+  localStorage.setItem('flotta_login_time', Date.now().toString());
+  resetLogoutTimer();
+  await initFirebase();
+  requestNotifPermission();
+};
+
+window.autoLogin = async function(name, pin) {
+  document.getElementById('loginName').value = name;
+  document.getElementById('loginPin').value = pin;
+  await doLogin();
+};
+
+window.doLogout = function(){
+  currentUser=null;
+  if(logoutTimer) clearTimeout(logoutTimer);
+  localStorage.removeItem('flotta_login');
+  localStorage.removeItem('flotta_login_time');
+  document.getElementById('mainApp').style.display='none';
+  document.getElementById('loginScreen').style.display='flex';
+  document.getElementById('loginPin').value='';
+};
+
+async function initFirebase(){
+  for(const car of defaultCars){
+    const ref=doc(db,'cars',car.id);
+    const snap=await getDoc(ref);
+    if(!snap.exists())await setDoc(ref,car);
+  }
+  const mref=doc(db,'members',currentUser);
+  const msnap=await getDoc(mref);
+  if(!msnap.exists()){
+    await setDoc(mref,{id:currentUser,name:DISPLAY_NAMES[currentUser],status:'szabad',loc:'Hegyeshalom',car:'',fuel:'3n4',online:true,isAdmin:adminList.includes(currentUser)});
+  }else{
+    await setDoc(mref,{online:true},{merge:true});
+  }
+
+  onSnapshot(collection(db,'cars'),(snap)=>{
+    setSyncDot(true);
+    cars=[];
+    snap.forEach(d=>cars.push({...d.data(),id:d.id}));
+    myCar=cars.find(c=>Array.isArray(c.crew)&&c.crew.includes(currentUser))||null;
+    updateMyCarDisplay();
+    renderCsapat();
+    renderCars();
+    renderAdminCars();
+    renderCarSwitchList();
+    updateDispatchCars();
+    checkFuelWarnings();
+  });
+
+  onSnapshot(collection(db,'members'),(snap)=>{
+    members={};
+    snap.forEach(d=>members[d.id]={...d.data(),id:d.id});
+    renderCsapat();
+  });
+
+  let firstLoad=true;
+  const nq=query(collection(db,'notifications'),orderBy('ts','desc'),limit(30));
+  onSnapshot(nq,(snap)=>{
+    if(firstLoad){
+      const area=document.getElementById('newNotifArea');
+      area.innerHTML='';
+      const docs=[];
+      snap.forEach(d=>docs.push(d.data()));
+      docs.reverse().forEach(data=>{
+        if(data.from!==currentUser){
+          addNotifUI(data.msg,true,data.ts,data.type);
+        }
+      });
+      firstLoad=false;
+      return;
+    }
+    snap.docChanges().forEach(change=>{
+      if(change.type==='added'){
+        const d=change.doc.data();
+        if(d.from!==currentUser){
+          addNotifUI(d.msg,false,d.ts,d.type);
+          // Push notification
+          if(d.type==='boke'){
+            sendPushNotif('👋 Megböktek!',d.msg.replace(/<[^>]*>/g,''));
+          }else{
+            sendPushNotif('🚐 FlottaApp',d.msg.replace(/<[^>]*>/g,''));
+          }
+        }
+      }
+    });
+  });
+
+  // Load pins for admin
+  if(adminList.includes(currentUser)){
+    for(const uid of Object.keys(DISPLAY_NAMES)){
+      try{
+        const ps=await getDoc(doc(db,'pins',uid));
+        if(ps.exists())currentPins[uid]=ps.data().pin;
+      }catch(e){}
+    }
+  }
+}
+
+async function sendNotif(msg,type='status'){
+  try{await addDoc(collection(db,'notifications'),{msg,from:currentUser,ts:serverTimestamp(),type});}catch(e){}
+  addNotifUI(msg,true,null,type);
+}
+
+function addNotifUI(msg,isMine=false,ts=null,type='status'){
+  if(!isMine){
+    notifCount++;
+    const c=document.getElementById('notifCount');c.textContent=notifCount;c.classList.add('show');
+  }
+  const area=document.getElementById('newNotifArea');
+  const timeStr=ts?timeAgo(ts):'Most';
+  const dotCls=type==='boke'?'notif-dot boke':'notif-dot new';
+  const div=document.createElement('div');div.className='card';
+  div.style.borderColor=isMine?'#C0DD97':(type==='boke'?'#FAC775':'#85B7EB');
+  div.innerHTML=`<div class="notif-row"><div class="${dotCls}"></div><div><div class="ntxt">${msg}</div><div class="ntime">${timeStr}</div></div></div>`;
+  area.prepend(div);
+}
+
+function checkFuelWarnings(){
+  const area=document.getElementById('fuelWarnArea');area.innerHTML='';
+  cars.forEach(c=>{
+    if(c.fuel==='negyed'){
+      const div=document.createElement('div');div.className='warn-box';
+      div.innerHTML=`⚠️ <span><strong>${c.plate} – Tankolni kell!</strong></span>`;
+      area.appendChild(div);
+    }
+  });
+}
+
+function updateMyCarDisplay(){
+  myCar=cars.find(c=>Array.isArray(c.crew)&&c.crew.includes(currentUser))||null;
+  document.getElementById('myCarDisplay').textContent=myCar?myCar.plate:'– Nincs autó –';
+  document.getElementById('myCarType').textContent=myCar?myCar.type:'Válassz autót';
+}
+
+function updateDispatchCars(){
+  const sel=document.getElementById('dispatchCar');
+  if(!sel)return;
+  sel.innerHTML='<option value="">– Válassz autót –</option>';
+  cars.forEach(c=>{sel.innerHTML+=`<option value="${c.id}">${c.plate} – ${c.type}</option>`;});
+}
+
+// CSAPAT
+function renderCsapat(){
+  const list=document.getElementById('csapatLista');
+  const allPeople=Object.keys(DISPLAY_NAMES);
+  let terepenHtml='<div class="slabel">Terepen</div>';
+  let irodaHtml='<div class="slabel">Irodában / Szabad</div>';
+  let hasTerepen=false, hasIroda=false;
+
+  allPeople.forEach(uid=>{
+    const m=members[uid];
+    const status=m?m.status:'szabad';
+    const loc=m?m.loc:'–';
+    const carId=m?m.car:'';
+    const car=cars.find(c=>c.id===carId);
+    const st=getStatusInfo(status);
+    const f=car?fuelData[car.fuel]||fuelData['3n4']:null;
+    const fw=car&&car.fuel==='negyed';
+    const isMe=uid===currentUser;
+    const isIroda=status==='iroda'||status==='szabad'||(!car&&status!=='munka'&&status!=='hiba'&&status!=='bekotes'&&status!=='uton'&&status!=='eszik'&&status!=='tankol');
+
+    const bokeBtn=isMe?'':`<button class="boke-btn" onclick="openBoke('${uid}')">👋 Megbök</button>`;
+
+    const cardHtml=`<div class="card">
+      <div class="row">
+        <div class="av ${AV_COLORS[uid]}">${INITIALS[uid]}</div>
+        <div style="flex:1;min-width:0">
+          <div class="dname">${DISPLAY_NAMES[uid]}${isMe?' <span style="font-size:10px;color:#185FA5">(te)</span>':''}</div>
+          <div class="dsub">${car?'🚗 '+car.plate+' · ':''} ${loc}</div>
+        </div>
+        <span class="badge ${st.badgeCls}">${st.emoji} ${st.label}</span>
+      </div>
+      ${f?`<div class="fuel-row"><span style="font-size:13px">${fw?'⚠️':'⛽'}</span><div class="fuel-bar-bg"><div class="fuel-bar-fill" style="width:${f.w}%;background:${f.color}"></div></div><span class="fuel-lbl" style="color:${fw?'#A32D2D':'#888'}">${f.label}</span></div>`:''}
+      ${bokeBtn}
+    </div>`;
+
+    if(isIroda){irodaHtml+=cardHtml;hasIroda=true;}
+    else{terepenHtml+=cardHtml;hasTerepen=true;}
+  });
+
+  list.innerHTML=(hasTerepen?terepenHtml:'')+(hasIroda?irodaHtml:'');
+}
+
+// AUTÓK
+function renderCars(){
+  document.getElementById('cardsRoot').innerHTML=cars.map(car=>{
+    const mine=Array.isArray(car.crew)&&car.crew.includes(currentUser);
+    const f=fuelData[car.fuel]||fuelData['3n4'];
+    const fw=car.fuel==='negyed';
+    const d=mine?'':'disabled';
+    const iconCls=car.serv&&car.serv!=='done'?'ci-serv':car.iconCls||'ci-ford';
+    const crewHTML=(Array.isArray(car.crew)&&car.crew.length>0
+      ?car.crew.map((uid,i)=>`<div class="crew-slot"><span class="slot-num">${i+1}.</span><select ${d} onchange="updateCrewMember('${car.id}',${i},this.value)">${Object.keys(DISPLAY_NAMES).map(u=>`<option value="${u}"${u===uid?' selected':''}>${DISPLAY_NAMES[u]}</option>`).join('')}<option value=""${!uid?' selected':''}>– Senki –</option></select>${mine?`<button class="remove-btn" onclick="removeCrewMember('${car.id}',${i})">✕</button>`:'<span style="width:20px"></span>'}</div>`)
+      :[`<div class="crew-slot"><span class="slot-num">1.</span><select ${d} onchange="updateCrewMember('${car.id}',0,this.value)">${Object.keys(DISPLAY_NAMES).map(u=>`<option value="${u}">${DISPLAY_NAMES[u]}</option>`).join('')}<option value="" selected>– Senki –</option></select><span style="width:20px"></span></div>`]
+    ).join('');
+    const sbc=car.serv?`serv-bar ${servData[car.serv]?servData[car.serv].cls:''} show`:'serv-bar';
+    return `<div class="card${mine?'':' locked'}" id="card-${car.id}">
+      <div class="row">
+        <div class="car-icon ${iconCls}"><i class="ti ti-car"></i></div>
+        <div style="flex:1;min-width:0">
+          <div class="dname">${car.plate}${fw?' ⚠️':''}</div>
+          <div class="dsub">${car.type}</div>
+          <span class="make-tag ${car.tagCls||'mt-ford'}">${car.brand||'–'}</span>
+        </div>
+      </div>
+      ${mine?'':`<div class="lock-notice">🔒 Csak az módosíthatja, aki ebben az autóban van</div>`}
+      <div class="${sbc}" id="sbar-${car.id}"><span>${car.serv&&servData[car.serv]?servData[car.serv].txt:''}</span></div>
+      <div class="notif-toast" id="notif-${car.id}">🔔 Kész, elvihető – értesítés elküldve!</div>
+      <div class="fuel-row">
+        <span style="font-size:13px">${fw?'⚠️':'⛽'}</span>
+        <div class="fuel-bar-bg"><div class="fuel-bar-fill" style="width:${f.w}%;background:${f.color}"></div></div>
+        <span class="fuel-lbl" style="color:${fw?'#A32D2D':'#888'}">${f.label}</span>
+      </div>
+      <div class="fuel-opts">
+        <button class="fuel-opt fo-tele${car.fuel==='tele'?' active':''}" onclick="setCarFuel('${car.id}','tele')" ${d}>Tele</button>
+        <button class="fuel-opt fo-3n4${car.fuel==='3n4'?' active':''}" onclick="setCarFuel('${car.id}','3n4')" ${d}>¾</button>
+        <button class="fuel-opt fo-fele${car.fuel==='fele'?' active':''}" onclick="setCarFuel('${car.id}','fele')" ${d}>Fele</button>
+        <button class="fuel-opt fo-negyed${car.fuel==='negyed'?' active':''}" onclick="setCarFuel('${car.id}','negyed')" ${d}>Negyed</button>
+      </div>
+      <div class="divider"></div>
+      <div class="crew-label">👥 Sofőr / csapat</div>
+      <div class="crew-slots" id="crew-${car.id}">${crewHTML}</div>
+      ${mine?`<button class="add-person-btn" id="addbtn-${car.id}" style="${(car.crew||[]).length>=3?'display:none':''}" onclick="addCrewSlot('${car.id}')">➕ Személy hozzáadása</button>`:''}
+      <div class="divider"></div>
+      <div class="opts-label">Feladat státusz</div>
+      <div class="opts-grid">${statusList.map(s=>`<button class="opt-btn ob-${s.key}${car.status===s.key?' active':''}" onclick="${mine?`setCarStatus('${car.id}','${s.key}')`:''}" ${d}>${s.emoji} ${s.label}</button>`).join('')}</div>
+      <div class="divider"></div>
+      <div class="opts-label">📍 Helyszín</div>
+      <select ${d} onchange="${mine?`setCarLoc('${car.id}',this.value)`:''}" style="width:100%;padding:6px 9px;font-size:12px;border-radius:8px;border:0.5px solid rgba(0,0,0,.15);background:${mine?'#fff':'#f5f4f0'};color:#111;margin-bottom:6px">
+        ${locations.map(l=>`<option${l===car.loc?' selected':''}>${l}</option>`).join('')}
+      </select>
+      <div class="opts-label">🔧 Szerviz</div>
+      <div class="serv-grid">
+        <button class="serv-btn sb-wait${car.serv==='wait'?' active':''}" onclick="${mine?`setCarServ('${car.id}','wait')`:''}" ${d}><i class="ti ti-clock"></i>⏳ Szervizre vár</button>
+        <button class="serv-btn sb-in${car.serv==='in'?' active':''}" onclick="${mine?`setCarServ('${car.id}','in')`:''}" ${d}><i class="ti ti-tool"></i>🔧 Szervizben</button>
+        <button class="serv-btn sb-done${car.serv==='done'?' active':''}" onclick="${mine?`setCarServ('${car.id}','done')`:''}" ${d}><i class="ti ti-check"></i>✅ Kész</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderAdminCars(){
+  const icons={src:'ci-toyota',mhs:'ci-peugeot',abs:'ci-ford',njw:'ci-ford',pnh:'ci-ford'};
+  document.getElementById('adminCarList').innerHTML=cars.map((c,i)=>`
+    <div class="row" style="margin-bottom:${i<cars.length-1?'9px':'0'}">
+      <div class="car-icon ${c.iconCls||'ci-ford'}" style="width:30px;height:30px;font-size:15px"><i class="ti ti-car"></i></div>
+      <div style="flex:1"><div class="dname" style="font-size:12px">${c.plate} · ${c.brand}</div></div>
+      <button onclick="deleteCar('${c.id}')" style="padding:4px 8px;font-size:11px;border-radius:8px;border:0.5px solid #F7C1C1;background:#FCEBEB;color:#A32D2D;cursor:pointer">🗑️</button>
+    </div>`).join('');
+
+  // Members with PIN and admin toggle
+  document.getElementById('adminMemberList').innerHTML=Object.keys(DISPLAY_NAMES).map(uid=>{
+    const isAdmin=adminList.includes(uid);
+    const isMe=uid===currentUser;
+    return `<div class="card" style="margin-bottom:8px;padding:10px">
+      <div class="row" style="margin-bottom:8px">
+        <div class="av ${AV_COLORS[uid]}" style="width:30px;height:30px;font-size:11px">${INITIALS[uid]}</div>
+        <div style="flex:1;min-width:0">
+          <div class="dname" style="font-size:12px">${DISPLAY_NAMES[uid]}</div>
+          <div class="dsub">${isAdmin?'👑 Admin':ROLES_DEFAULT[uid]}</div>
+        </div>
+        ${isMe?'<span class="role-badge r-admin">👑 Te</span>':
+        `<button onclick="toggleAdmin('${uid}')" style="padding:3px 7px;font-size:11px;border-radius:8px;border:0.5px solid ${isAdmin?'#F7C1C1':'#C0DD97'};background:${isAdmin?'#FCEBEB':'#EAF3DE'};color:${isAdmin?'#A32D2D':'#3B6D11'};cursor:pointer">${isAdmin?'🚫 Elvesz':'👑 Admin'}</button>`}
+      </div>
+      <button onclick="openPinModal('${uid}')" style="width:100%;padding:6px;font-size:12px;border-radius:8px;border:0.5px solid #85B7EB;background:#E6F1FB;color:#185FA5;cursor:pointer">🔑 PIN megtekintés / módosítás</button>
+    </div>`;
+  }).join('');
+}
+
+function renderCarSwitchList(){
+  document.getElementById('carSwitchList').innerHTML=cars.map(c=>{
+    const mine=Array.isArray(c.crew)&&c.crew.includes(currentUser);
+    const f=fuelData[c.fuel]||fuelData['3n4'];
+    return `<button onclick="switchToCar('${c.id}')" style="width:100%;margin-bottom:5px;padding:8px 10px;border-radius:8px;border:${mine?'2px solid #185FA5':'0.5px solid rgba(0,0,0,.12)'};background:${mine?'#E6F1FB':'#f5f4f0'};cursor:pointer;display:flex;align-items:center;gap:8px;font-size:12px;color:#111">
+      <span style="font-size:18px">🚐</span>
+      <div style="flex:1"><div style="font-weight:500">${c.plate}</div><div style="font-size:11px;color:#888">${c.type} · ⛽ ${f.label}</div></div>
+      ${mine?'<span style="font-size:11px;color:#185FA5;font-weight:500">✓</span>':''}
+    </button>`;
+  }).join('');
+}
+
+// FIRESTORE ACTIONS
+window.setCarStatus = async function(carId,key){
+  await setDoc(doc(db,'cars',carId),{status:key},{merge:true});
+  // Update ALL crew members with same status
+  const car=cars.find(c=>c.id===carId);
+  const crew=Array.isArray(car?.crew)?car.crew:[];
+  for(const uid of crew){
+    if(uid) await setDoc(doc(db,'members',uid),{status:key},{merge:true});
+  }
+  const st=getStatusInfo(key);
+  const crewNames=crew.filter(u=>u).map(u=>DISPLAY_NAMES[u]||u).join(', ');
+  await sendNotif(`${st.emoji} <strong>${crewNames||DISPLAY_NAMES[currentUser]}</strong>: ${st.label}${car?' · '+car.plate:''}`);
+};
+
+window.setCarFuel = async function(carId,key){
+  await setDoc(doc(db,'cars',carId),{fuel:key},{merge:true});
+  if(key==='negyed'){
+    const car=cars.find(c=>c.id===carId);
+    await sendNotif(`⚠️ <strong>${car?car.plate:carId}</strong> – Tankolni kell!`);
+  }
+};
+
+window.setCarLoc = async function(carId,val){
+  await setDoc(doc(db,'cars',carId),{loc:val},{merge:true});
+  // Update ALL crew members location
+  const car=cars.find(c=>c.id===carId);
+  const crew=Array.isArray(car?.crew)?car.crew:[];
+  for(const uid of crew){
+    if(uid) await setDoc(doc(db,'members',uid),{loc:val},{merge:true});
+  }
+};
+
+window.setCarServ = async function(carId,key){
+  const car=cars.find(c=>c.id===carId);
+  const wasActive=car&&car.serv===key;
+  const newVal=wasActive?null:key;
+  await setDoc(doc(db,'cars',carId),{serv:newVal},{merge:true});
+  if(!wasActive){
+    if(key==='done'){
+      const t=document.getElementById('notif-'+carId);t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3000);
+      await sendNotif(`✅ <strong>${car?car.plate:carId}</strong> kész a szervizből, elvihető!`);
+    }else{
+      const txt=servData[key]?servData[key].txt:'';
+      await sendNotif(`🔧 <strong>${car?car.plate:carId}</strong> szerviz: ${txt}`);
+    }
+  }
+};
+
+window.addCrewSlot = async function(carId){
+  const car=cars.find(c=>c.id===carId);if(!car)return;
+  const crew=Array.isArray(car.crew)?[...car.crew]:[];
+  if(crew.length>=3)return;
+  crew.push('');
+  await setDoc(doc(db,'cars',carId),{crew},{merge:true});
+};
+
+window.removeCrewMember = async function(carId,idx){
+  const car=cars.find(c=>c.id===carId);if(!car)return;
+  const crew=Array.isArray(car.crew)?[...car.crew]:[];
+  if(crew.length<=1){crew[0]='';}else{crew.splice(idx,1);}
+  await setDoc(doc(db,'cars',carId),{crew},{merge:true});
+};
+
+window.updateCrewMember = async function(carId,idx,val){
+  const car=cars.find(c=>c.id===carId);if(!car)return;
+  const crew=Array.isArray(car.crew)?[...car.crew]:[];
+  while(crew.length<=idx)crew.push('');
+  crew[idx]=val;
+  await setDoc(doc(db,'cars',carId),{crew},{merge:true});
+  if(val)await setDoc(doc(db,'members',val),{car:carId},{merge:true});
+};
+
+window.switchToCar = async function(carId){
+  for(const car of cars){
+    if(Array.isArray(car.crew)&&car.crew.includes(currentUser)){
+      const crew=car.crew.filter(u=>u!==currentUser);
+      await setDoc(doc(db,'cars',car.id),{crew},{merge:true});
+    }
+  }
+  const newCar=cars.find(c=>c.id===carId);
+  if(newCar){
+    const crew=Array.isArray(newCar.crew)?[...newCar.crew]:[];
+    if(!crew.includes(currentUser))crew.push(currentUser);
+    await setDoc(doc(db,'cars',carId),{crew},{merge:true});
+    await setDoc(doc(db,'members',currentUser),{car:carId},{merge:true});
+    await sendNotif(`🔄 <strong>${DISPLAY_NAMES[currentUser]}</strong> átült: ${newCar.plate}`);
+  }
+  document.getElementById('carSwitchPanel').style.display='none';
+};
+
+window.saveMyStatus = async function(){
+  const btn=document.getElementById('myStatusBtn');
+  const loc=document.getElementById('myLocSel').value;
+  const st=getStatusInfo(myStatus);
+  await setDoc(doc(db,'members',currentUser),{status:myStatus,loc,fuel:myFuel},{merge:true});
+  if(myCar){
+    await setDoc(doc(db,'cars',myCar.id),{status:myStatus,loc,fuel:myFuel},{merge:true});
+    // Update all other crew members too
+    const crew=Array.isArray(myCar.crew)?myCar.crew:[];
+    for(const uid of crew){
+      if(uid && uid!==currentUser) await setDoc(doc(db,'members',uid),{status:myStatus,loc},{merge:true});
+    }
+  }
+  document.getElementById('myStatusDisplay').textContent=`${st.emoji} ${st.label} · ${myCar?myCar.plate:'–'} · ${loc}`;
+  btn.textContent='✅ Mentve!';btn.style.background='#3B6D11';
+  document.getElementById('myStatusToast').classList.add('show');
+  await sendNotif(`📍 <strong>${DISPLAY_NAMES[currentUser]}</strong>: ${st.emoji} ${st.label} · ${loc}`);
+  setTimeout(()=>{btn.textContent='✅ Státusz frissítése';btn.style.background='#185FA5';document.getElementById('myStatusToast').classList.remove('show');},2500);
+};
+
+window.addCar = async function(){
+  const plate=document.getElementById('newPlate').value.trim().toUpperCase();
+  const brand=document.getElementById('newBrand').value;
+  const type=document.getElementById('newType').value.trim();
+  if(!plate)return;
+  const id=plate.toLowerCase().replace(/[^a-z0-9]/g,'');
+  const iconMap={'Toyota':'ci-toyota','Ford':'ci-ford','Peugeot':'ci-peugeot'};
+  const tagMap={'Toyota':'mt-toyota','Ford':'mt-ford','Peugeot':'mt-peugeot'};
+  await setDoc(doc(db,'cars',id),{id,plate,brand,type:type||brand,iconCls:iconMap[brand]||'ci-ford',tagCls:tagMap[brand]||'mt-ford',fuel:'3n4',crew:[],status:'szabad',loc:'Hegyeshalom',serv:null});
+  document.getElementById('newPlate').value='';document.getElementById('newType').value='';
+  showToast('✅ Autó hozzáadva: '+plate);
+};
+
+window.deleteCar = async function(carId){
+  if(!confirm('Biztosan törlöd?'))return;
+  await deleteDoc(doc(db,'cars',carId));
+  showToast('🗑️ Autó törölve');
+};
+
+window.toggleAdmin = function(uid){
+  const idx=adminList.indexOf(uid);
+  if(idx===-1){adminList.push(uid);sendNotif(`👑 Admin jog adva: <strong>${DISPLAY_NAMES[uid]}</strong>`);}
+  else{adminList.splice(idx,1);sendNotif(`🚫 Admin jog visszavonva: <strong>${DISPLAY_NAMES[uid]}</strong>`);}
+  renderAdminCars();
+};
+
+// PIN MODAL
+window.openPinModal = function(uid){
+  bokeTarget=null;
+  document.getElementById('adminPinUid').value=uid;
+  document.getElementById('adminPinName').textContent=DISPLAY_NAMES[uid];
+  document.getElementById('adminPinDisplay').textContent='••••';
+  document.getElementById('pinEditArea').style.display='none';
+  document.getElementById('showPinBtn').textContent='👁️ Mutat';
+  pinVisible=false;
+  document.getElementById('adminPinModal').classList.add('show');
+};
+
+window.toggleShowPin = function(){
+  const uid=document.getElementById('adminPinUid').value;
+  const pin=currentPins[uid]||'1234';
+  const disp=document.getElementById('adminPinDisplay');
+  pinVisible=!pinVisible;
+  disp.textContent=pinVisible?pin:'••••';
+  document.getElementById('showPinBtn').textContent=pinVisible?'🙈 Elrejt':'👁️ Mutat';
+};
+
+window.editPin = function(){
+  document.getElementById('pinEditArea').style.display='block';
+  document.getElementById('newPinVal').value='';
+};
+
+window.saveAdminPin = async function(){
+  const uid=document.getElementById('adminPinUid').value;
+  const pin=document.getElementById('newPinVal').value;
+  if(pin.length<4){showToast('❌ 4 számjegy kell!');return;}
+  await setDoc(doc(db,'pins',uid),{pin});
+  currentPins[uid]=pin;
+  document.getElementById('adminPinDisplay').textContent=pinVisible?pin:'••••';
+  document.getElementById('pinEditArea').style.display='none';
+  showToast('✅ PIN elmentve: '+DISPLAY_NAMES[uid]);
+};
+
+// BÖKÉS
+window.openBoke = function(uid){
+  bokeTarget=uid;
+  document.getElementById('bokeModalSub').textContent=DISPLAY_NAMES[uid]+' – írd meg az üzeneted';
+  document.getElementById('bokeMsg').value='';
+  document.getElementById('bokeModal').classList.add('show');
+};
+
+window.sendBoke = async function(){
+  if(!bokeTarget)return;
+  const msg=document.getElementById('bokeMsg').value.trim()||'Hé, mizu?';
+  const fullMsg=`👋 <strong>${DISPLAY_NAMES[currentUser]}</strong> megbökött <strong>${DISPLAY_NAMES[bokeTarget]}</strong>: ${msg}`;
+  await sendNotif(fullMsg,'boke');
+  closeModal('bokeModal');
+  showToast('👋 Bökés elküldve!');
+};
+
+// DISPATCH (Iroda)
+let dispatchTypeVal=null;
+window.selDispatch = function(btn,key){
+  document.querySelectorAll('#irodaDispatchPanel .opt-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  dispatchTypeVal=key;
+};
+
+window.sendDispatch = async function(){
+  if(!dispatchTypeVal){showToast('❌ Válassz feladat típust!');return;}
+  const loc=document.getElementById('dispatchLoc').value;
+  const carId=document.getElementById('dispatchCar').value;
+  const note=document.getElementById('dispatchNote').value.trim();
+  const car=cars.find(c=>c.id===carId);
+  const st=getStatusInfo(dispatchTypeVal);
+  let msg=`📋 <strong>Feladat:</strong> ${st.emoji} ${st.label} · ${loc}`;
+  if(car)msg+=` · ${car.plate}`;
+  if(note)msg+=` · ${note}`;
+  msg+=` <em>(${DISPLAY_NAMES[currentUser]} küldte)</em>`;
+  await sendNotif(msg,'dispatch');
+  if(carId){
+    await setDoc(doc(db,'cars',carId),{status:dispatchTypeVal,loc},{merge:true});
+  }
+  document.getElementById('dispatchNote').value='';
+  showToast('📋 Feladat elküldve!');
+};
+
+// UI helpers
+window.selMyOpt = function(btn,key){
+  document.getElementById('myStatusGrid').querySelectorAll('.opt-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');myStatus=key;
+};
+window.selMyFuel = function(btn,key){
+  btn.closest('.fuel-opts').querySelectorAll('.fuel-opt').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');myFuel=key;
+};
+window.toggleCarSwitch = function(){
+  const p=document.getElementById('carSwitchPanel');
+  p.style.display=p.style.display==='none'?'block':'none';
+  renderCarSwitchList();
+};
+window.showTab = function(id,btn){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');btn.classList.add('active');
+  if(id==='ertesit'){notifCount=0;const c=document.getElementById('notifCount');c.textContent='';c.classList.remove('show');}
+};
+window.closeModal = function(id){document.getElementById(id).classList.remove('show');};
+
+setSyncDot(false);
+</script>
+</body>
+</html>
