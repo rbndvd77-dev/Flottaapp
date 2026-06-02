@@ -113,6 +113,43 @@ body{font-family:system-ui,sans-serif;background:#f0ede8;min-height:100vh;displa
 .sync-dot.off{background:#ccc}
 .iroda-dispatch{background:#EEEDFE;border-radius:12px;border:0.5px solid #AFA9EC;padding:12px;margin-bottom:8px}
 .iroda-dispatch-title{font-size:13px;font-weight:600;color:#3C3489;margin-bottom:10px}
+
+/* DESKTOP LAYOUT */
+@media (min-width: 768px) {
+  body { background: #e8e4de; }
+  .app { max-width: 100%; flex-direction: column; }
+  .topbar { max-width: 100%; padding: 12px 32px; }
+  .nav { max-width: 100%; padding: 0 32px; justify-content: flex-start; gap: 4px; }
+  .nav-btn { flex: none; padding: 10px 18px; flex-direction: row; gap: 6px; font-size: 13px; border-radius: 8px; }
+  .nav-btn .nav-emoji { font-size: 16px; }
+  .nav-btn.active { background: #E6F1FB; border-radius: 8px; }
+  .desktop-layout { display: flex; gap: 16px; padding: 16px 32px; align-items: flex-start; }
+  .section { display: none; padding: 0; }
+  .section.active { display: block; }
+  .desktop-col-left { flex: 1; min-width: 0; }
+  .desktop-col-right { width: 340px; flex-shrink: 0; }
+  /* On desktop show both csapat and autok side by side */
+  #desktop-wrapper { display: flex; gap: 16px; padding: 16px 32px; }
+  #desktop-left { flex: 1; }
+  #desktop-right { width: 360px; flex-shrink: 0; }
+  .card { border-radius: 10px; }
+  .slabel { margin-top: 14px; }
+  /* Iroda dispatch bigger on desktop */
+  .iroda-dispatch { padding: 16px; }
+  .iroda-dispatch-title { font-size: 15px; margin-bottom: 14px; }
+  /* Hide mobile nav, show desktop nav */
+  .nav { border-bottom: none; border-right: none; background: #fff; }
+  /* Desktop notification badge */
+  .notif-count { top: -6px; right: -6px; }
+}
+@media (min-width: 768px) {
+  .mobile-only { display: none !important; }
+}
+@media (max-width: 767px) {
+  .desktop-only { display: none !important; }
+  #desktop-wrapper { display: block !important; padding: 0 !important; }
+  #desktop-left, #desktop-right { width: auto !important; }
+}
 </style>
 <script>
 // Auto-logout after 4 hours of inactivity
@@ -193,8 +230,21 @@ if('serviceWorker' in navigator) {
     <button class="nav-btn" onclick="showTab('admin',this)" id="adminTabBtn" style="display:none"><span class="nav-emoji">⚙️</span>Admin</button>
   </div>
 
-  <div id="csapat" class="section active"><div id="csapatLista"></div></div>
-  <div id="autok" class="section"><div id="cardsRoot"></div></div>
+  <!-- Desktop wrapper: on desktop shows csapat+autok side by side -->
+  <div id="desktop-wrapper">
+    <div id="desktop-left">
+      <div id="csapat" class="section active"><div id="csapatLista"></div></div>
+      <div id="autok" class="section"><div id="cardsRoot"></div></div>
+    </div>
+    <div id="desktop-right" class="desktop-only">
+      <!-- Desktop: always show notifications on right -->
+      <div style="padding:10px 0">
+        <div class="slabel" style="margin-top:0">🔔 Értesítések</div>
+        <div id="desktopNotifArea"></div>
+        <div id="desktopFuelWarn"></div>
+      </div>
+    </div>
+  </div>
 
   <div id="status" class="section">
     <div class="card" style="background:#E6F1FB;border-color:#B5D4F4;margin-bottom:10px">
@@ -251,6 +301,7 @@ if('serviceWorker' in navigator) {
       <div id="carSwitchPanel" style="display:none;margin-top:8px">
         <div class="opts-label">Válassz autót:</div>
         <div id="carSwitchList"></div>
+        <button onclick="leaveAllCars()" style="width:100%;margin-top:6px;padding:8px 10px;border-radius:8px;border:0.5px solid #F7C1C1;background:#FCEBEB;color:#A32D2D;cursor:pointer;font-size:12px;font-weight:500">🚪 Kiszállok az autóból</button>
       </div>
     </div>
     <div class="slabel">⛽ Nap végi üzemanyag</div>
@@ -553,23 +604,43 @@ function addNotifUI(msg,isMine=false,ts=null,type='status'){
     notifCount++;
     const c=document.getElementById('notifCount');c.textContent=notifCount;c.classList.add('show');
   }
-  const area=document.getElementById('newNotifArea');
   const timeStr=ts?timeAgo(ts):'Most';
   const dotCls=type==='boke'?'notif-dot boke':'notif-dot new';
+  const borderColor=isMine?'#C0DD97':(type==='boke'?'#FAC775':'#85B7EB');
+  const html=`<div class="notif-row"><div class="${dotCls}"></div><div><div class="ntxt">${msg}</div><div class="ntime">${timeStr}</div></div></div>`;
+
+  // Mobile notifications area
+  const area=document.getElementById('newNotifArea');
   const div=document.createElement('div');div.className='card';
-  div.style.borderColor=isMine?'#C0DD97':(type==='boke'?'#FAC775':'#85B7EB');
-  div.innerHTML=`<div class="notif-row"><div class="${dotCls}"></div><div><div class="ntxt">${msg}</div><div class="ntime">${timeStr}</div></div></div>`;
+  div.style.borderColor=borderColor;
+  div.innerHTML=html;
   area.prepend(div);
+
+  // Desktop right panel notifications
+  const darea=document.getElementById('desktopNotifArea');
+  if(darea){
+    const ddiv=document.createElement('div');ddiv.className='card';
+    ddiv.style.borderColor=borderColor;
+    ddiv.innerHTML=html;
+    darea.prepend(ddiv);
+    // Keep only last 10
+    while(darea.children.length>10)darea.removeChild(darea.lastChild);
+  }
 }
 
 function checkFuelWarnings(){
-  const area=document.getElementById('fuelWarnArea');area.innerHTML='';
-  cars.forEach(c=>{
-    if(c.fuel==='negyed'){
-      const div=document.createElement('div');div.className='warn-box';
-      div.innerHTML=`⚠️ <span><strong>${c.plate} – Tankolni kell!</strong></span>`;
-      area.appendChild(div);
-    }
+  const areas=['fuelWarnArea','desktopFuelWarn'];
+  areas.forEach(id=>{
+    const area=document.getElementById(id);
+    if(!area)return;
+    area.innerHTML='';
+    cars.forEach(c=>{
+      if(c.fuel==='negyed'){
+        const div=document.createElement('div');div.className='warn-box';
+        div.innerHTML=`⚠️ <span><strong>${c.plate} – Tankolni kell!</strong></span>`;
+        area.appendChild(div);
+      }
+    });
   });
 }
 
@@ -798,6 +869,22 @@ window.updateCrewMember = async function(carId,idx,val){
   if(val)await setDoc(doc(db,'members',val),{car:carId},{merge:true});
 };
 
+window.leaveAllCars = async function(){
+  for(const car of cars){
+    if(Array.isArray(car.crew)&&car.crew.includes(currentUser)){
+      const crew=car.crew.filter(u=>u!==currentUser);
+      await setDoc(doc(db,'cars',car.id),{crew},{merge:true});
+    }
+  }
+  await setDoc(doc(db,'members',currentUser),{car:''},{merge:true});
+  myCar=null;
+  document.getElementById('myCarDisplay').textContent='– Nincs autó –';
+  document.getElementById('myCarType').textContent='Válassz autót';
+  document.getElementById('carSwitchPanel').style.display='none';
+  await sendNotif(`🚪 <strong>${DISPLAY_NAMES[currentUser]}</strong> kiszállt az autóból`);
+  showToast('🚪 Kiszálltál az autóból');
+};
+
 window.switchToCar = async function(carId){
   for(const car of cars){
     if(Array.isArray(car.crew)&&car.crew.includes(currentUser)){
@@ -958,11 +1045,31 @@ window.toggleCarSwitch = function(){
   renderCarSwitchList();
 };
 window.showTab = function(id,btn){
+  const isDesktop=window.innerWidth>=768;
   document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
-  document.getElementById(id).classList.add('active');btn.classList.add('active');
+
+  if(isDesktop && (id==='csapat'||id==='autok')){
+    // On desktop show both csapat and autok together
+    document.getElementById('csapat').classList.add('active');
+    document.getElementById('autok').classList.add('active');
+  } else {
+    document.getElementById(id).classList.add('active');
+  }
+  btn.classList.add('active');
   if(id==='ertesit'){notifCount=0;const c=document.getElementById('notifCount');c.textContent='';c.classList.remove('show');}
 };
+
+// On desktop resize, keep both csapat+autok visible
+window.addEventListener('resize',()=>{
+  if(window.innerWidth>=768){
+    const activeSection=document.querySelector('.section.active');
+    if(activeSection&&(activeSection.id==='csapat'||activeSection.id==='autok')){
+      document.getElementById('csapat').classList.add('active');
+      document.getElementById('autok').classList.add('active');
+    }
+  }
+});
 window.closeModal = function(id){document.getElementById(id).classList.remove('show');};
 
 setSyncDot(false);
